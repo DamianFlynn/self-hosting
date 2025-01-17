@@ -1,0 +1,24 @@
+services:
+  # Docker-Updater - Automatic Docker Container Updater
+  # Checks for new containers, and replaces the old version
+  dockupdater:
+    image: "dockupdater/dockupdater:0.8.0"
+    container_name: "dockupdater"
+    security_opt:
+      - no-new-privileges:true
+    hostname: "dockupdater"
+    restart: 'unless-stopped'
+    #profiles: ["apps", "all"]
+    networks:
+      - socket_proxy
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock # Use Docker Socket Proxy instead for improved security
+    environment:
+      - "CLEANUP=true"
+      - "LOG_LEVEL=debug"
+      - "INTERVAL=7200"
+      - "LABEL=true"
+      - "WAIT=180"
+      - 'NOTIFIERS=discord://'
+    labels:
+      - "dockupdater.enable=true"
