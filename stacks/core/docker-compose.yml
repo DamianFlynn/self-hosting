@@ -1,3 +1,20 @@
+########################### NETWORKS
+networks:
+  default:
+    driver: bridge
+  socket_proxy:
+    name: socket_proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.91.0/24
+  t3_proxy:
+    name: t3_proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.90.0/24
+        
 services:
   # Docker-Updater - Automatic Docker Container Updater
   # Checks for new containers, and replaces the old version
