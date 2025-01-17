@@ -1,0 +1,28 @@
+services:
+
+  # Traefik Certs Dumper - Extract LetsEncrypt Certificates - Traefik2 Compatible
+  certdumper:
+    container_name: traefik_certdumper
+    image: ghcr.io/kereis/traefik-certs-dumper:1.7.0
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    # profiles: ["apps", "all"]
+    user: 1000:1000 
+    networks:
+      - default
+    # command: --restart-containers container1,container2,container3
+    volumes:
+      - $APPFOLDER/traefik3/acme:/traefik:ro
+      - $APPFOLDER/shared/certs/$DOMAINNAME:/output:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Only needed if restarting containers (use Docker Socket Proxy instead)
+    environment:
+      DOMAIN: $DOMAINNAME
+      OVERRIDE_UID: 1000
+      OVERRIDE_GID: 1000
+    healthcheck:
+      test: ["CMD", "/usr/bin/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
