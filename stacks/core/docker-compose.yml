@@ -3,39 +3,44 @@ networks:
   default:
     driver: bridge
   socket_proxy:
-    name: socket_proxy
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 192.168.91.0/24
+    # name: socket_proxy
+    external: true
+    # driver: bridge
+    # ipam:
+    #   config:
+    #     - subnet: 192.168.91.0/24
   t3_proxy:
-    name: t3_proxy
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 192.168.90.0/24
-        
+    # name: t3_proxy
+    external: true
+    # driver: bridge
+    # ipam:
+    #   config:
+    #     - subnet: 192.168.90.0/24
+
 services:
-  # Docker-Updater - Automatic Docker Container Updater
-  # Checks for new containers, and replaces the old version
-  dockupdater:
-    image: "dockupdater/dockupdater:0.8.0"
-    container_name: "dockupdater"
+
+  # Traefik Certs Dumper - Extract LetsEncrypt Certificates - Traefik2 Compatible
+  certdumper:
+    container_name: traefik_certdumper
+    image: ghcr.io/kereis/traefik-certs-dumper:1.7.0
     security_opt:
       - no-new-privileges:true
-    hostname: "dockupdater"
-    restart: 'unless-stopped'
-    #profiles: ["apps", "all"]
+    restart: unless-stopped
+    # profiles: ["apps", "all"]
     networks:
-      - socket_proxy
+      - default
+    # command: --restart-containers container1,container2,container3
     volumes:
-     - /var/run/docker.sock:/var/run/docker.sock # Use Docker Socket Proxy instead for improved security
+      - $APPFOLDER/traefik3/acme:/traefik:ro
+      - $APPFOLDER/shared/certs/$DOMAINNAME:/output:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Only needed if restarting containers (use Docker Socket Proxy instead)
     environment:
-      - "CLEANUP=true"
-      - "LOG_LEVEL=debug"
-      - "INTERVAL=7200"
-      - "LABEL=true"
-      - "WAIT=180"
-      - 'NOTIFIERS=discord://'
-    labels:
-      - "dockupdater.enable=true"
+      DOMAIN: $DOMAINNAME
+      OVERRIDE_UID: 1000
+      OVERRIDE_GID: 1000
+    healthcheck:
+      test: ["CMD", "/usr/bin/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
