@@ -18,8 +18,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro # Only needed if restarting containers (use Docker Socket Proxy instead)
     environment:
       DOMAIN: $DOMAINNAME
-      OVERRIDE_UID: 1000
-      OVERRIDE_GID: 1000
+      OVERRIDE_UID: 0
+      OVERRIDE_GID: 0
     healthcheck:
       test: ["CMD", "/usr/bin/healthcheck"]
       interval: 30s
