@@ -48,10 +48,9 @@ secrets:
 
 include:
   ########################### SERVICES
-  - socket-proxy.yml
   - traefik.yml
   - authelia.yml
   - traefik-cert-dumper.yml
   - traefik-cloudflare.yml
-  - portainer.yml
+
 
