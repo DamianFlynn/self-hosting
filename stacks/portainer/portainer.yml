@@ -18,6 +18,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro # # Use Docker Socket Proxy instead for improved security
       - $APPFOLDER/portainer/data:/data # Change to local directory if you want to save/transfer config locally
+      - $APPFOLDER/secrets:/srv/appdata/secrets # Add secrets to the container
     environment:
       - TZ=$TZ
     labels:
