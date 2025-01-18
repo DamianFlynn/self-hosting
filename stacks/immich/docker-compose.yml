@@ -131,7 +131,7 @@ services:
     container_name: immich_postgres
     image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
     environment:
-      POSTGRES_PASSWORD: /run/secrets/immich_db_password
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
@@ -160,9 +160,6 @@ services:
     networks:
       - immich
     secrets:
-      - gemini_api_key
-      - google_maps_api_key
-      - immich_api_key
       - immich_db_password
 
   power-tools:
