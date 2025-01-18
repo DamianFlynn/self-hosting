@@ -111,11 +111,15 @@ services:
       disable: false
     networks:
       - immich
-
+    secrets:
+      - gemini_api_key
+      - google_maps_api_key
+      - immich_api_key
+      - immich_db_password
 
   redis:
     container_name: immich_redis
-    image: docker.io/redis:7.4-alpine@sha256:1bf97f21f01b0e7bd4b7b34a26d3b9d8086e41e70c10f262e8a9e0b49b5116a0
+    image: docker.io/redis:6.2-alpine@sha256:eaba718fecd1196d88533de7ba49bf903ad33664a92debb24660a922ecd9cac8
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
@@ -155,7 +159,11 @@ services:
     restart: always
     networks:
       - immich
-
+    secrets:
+      - gemini_api_key
+      - google_maps_api_key
+      - immich_api_key
+      - immich_db_password
 
   power-tools:
     container_name: immich_power_tools
@@ -181,6 +189,11 @@ services:
     networks:
       - t3_proxy
       - immich
+    secrets:
+      - gemini_api_key
+      - google_maps_api_key
+      - immich_api_key
+      - immich_db_password 
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.immichtools-rtr.entrypoints=websecure"
