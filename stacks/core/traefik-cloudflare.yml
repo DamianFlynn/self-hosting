@@ -1,0 +1,33 @@
+services:
+
+  cf-companion:
+    container_name: 'cf-companion'
+    image: 'tiredofit/traefik-cloudflare-companion:latest'
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    depends_on:
+      - traefik
+    #profiles: ["core", "all"]
+    networks:
+      - t3_proxy
+      - default
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+    environment:
+      - TIMEZONE=$TZ
+      - TRAEFIK_VERSION=2
+      - CF_EMAIL=/run/secrets/cf_email
+      - CF_TOKEN=/run/secrets/cf_api_token
+      - TARGET_DOMAIN=$DOMAINNAME
+      - DOMAIN1=$DOMAINNAME
+      - DOMAIN1_ZONE_ID=/run/secrets/cf_zone_id
+      - DOMAIN1_PROXIED=TRUE
+      - DEFAULT_TTL=1
+      - REFRESH_ENTRIES=TRUE
+      - DOCKER_ENTRYPOINT=unix://var/run/docker.sock
+      - SWARM_MODE=FALSE
+    secrets:
+      - cf_email
+      - cf_api_token
+      - cf_zone_id

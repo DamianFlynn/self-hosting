@@ -18,8 +18,40 @@ networks:
     #     - subnet: 192.168.90.0/24
 
 
+########################### SECRETS
+secrets:
+  # Traefik
+  basic_auth_credentials:
+    file: /srv/appdata/secrets/core/basic_auth_credentials
+  traefik_forward_auth:
+    file: /srv/appdata/secrets/core/traefik_forward_auth
+
+  # Cloud Flare
+  cf_dns_api_token:
+    file: /srv/appdata/secrets/core/cf_dns_api_token
+  cf_email:
+    file: /srv/appdata/secrets/core/cf_email
+  cf_api_token:
+    file: /srv/appdata/secrets/core/cf_api_token
+  cf_zone_id:
+    file: /srv/appdata/secrets/core/cf_zone_id
+
+  # Authelia
+  authelia_jwt_secret:
+    file: /srv/appdata/secrets/core/authelia_jwt_secret
+  authelia_session_secret:
+    file: /srv/appdata/secrets/core/authelia_session_secret
+  authelia_storage_encryption_key:
+    file: /srv/appdata/secrets/core/authelia_storage_encryption_key
+
+
+
 include:
   ########################### SERVICES
-  
+  - socket-proxy.yml
+  - traefik.yml
+  - authelia.yml
   - traefik-cert-dumper.yml
+  - traefik-cloudflare.yml
+  - portainer.yml
 
