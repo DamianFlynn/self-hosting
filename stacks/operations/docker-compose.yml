@@ -43,7 +43,8 @@ services:
     ports:
       - "18880:8880"
     volumes:
-      - /srv/appdata/oxidized:/root/.config/oxidized
+      # - /srv/appdata/oxidized:/root/.config/oxidized
+      - /srv/appdata/oxidized:/home/oxidized/.config/oxidized/
     environment:
       CONFIG_RELOAD_INTERVAL: 600
     labels:
