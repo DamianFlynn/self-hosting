@@ -45,7 +45,7 @@ jobs:
         id: check-upstream
         run: |
           UPSTREAM_IMAGE="docker.n8n.io/n8nio/n8n:latest"
-          LOCAL_IMAGE="ghcr.io/${{ github.repository_owner }}/custom-n8n:latest"
+          LOCAL_IMAGE="${{ env.REGISTRY }}/${{ github.repository_owner }}/custom-n8n:latest"
           UPSTREAM_DIGEST=$(docker manifest inspect $UPSTREAM_IMAGE | jq -r '.Descriptor.digest')
           LOCAL_DIGEST=$(docker manifest inspect $LOCAL_IMAGE | jq -r '.Descriptor.digest' || echo "not found")
           echo "UPSTREAM_DIGEST=$UPSTREAM_DIGEST" >> $GITHUB_ENV
