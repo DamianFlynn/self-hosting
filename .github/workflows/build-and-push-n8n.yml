@@ -44,7 +44,8 @@ jobs:
       - name: Get latest n8n version
         id: get-latest-version
         run: |
-          LATEST_VERSION=$(curl -s https://hub.docker.com/v2/repositories/n8nio/n8n/tags/?page_size=1 | jq -r '.results[0].name')
+          LATEST_VERSION=$(curl -s https://hub.docker.com/v2/repositories/n8nio/n8n/tags/?page_size=1\&ordering=last_updated | jq -r '.results[0].name')
+          echo "LATEST_VERSION=$LATEST_VERSION"
           echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
 
       - name: Convert repository name to lowercase
@@ -57,6 +58,8 @@ jobs:
           LOCAL_IMAGE="${{ env.REGISTRY }}/${{ env.REPO }}:${{ env.LATEST_VERSION }}"
           UPSTREAM_DIGEST=$(docker manifest inspect $UPSTREAM_IMAGE | jq -r '.Descriptor.digest')
           LOCAL_DIGEST=$(docker manifest inspect $LOCAL_IMAGE | jq -r '.Descriptor.digest' || echo "not found")
+          echo "UPSTREAM_DIGEST=$UPSTREAM_DIGEST"
+          echo "LOCAL_DIGEST=$LOCAL_DIGEST"
           echo "UPSTREAM_DIGEST=$UPSTREAM_DIGEST" >> $GITHUB_ENV
           echo "LOCAL_DIGEST=$LOCAL_DIGEST" >> $GITHUB_ENV
 
@@ -68,6 +71,8 @@ jobs:
           push: true
           file: apps/n8n/dockerfile
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            N8N_VERSION=${{ env.LATEST_VERSION }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.REPO }}:${{ env.LATEST_VERSION }}
             ${{ env.REGISTRY }}/${{ env.REPO }}:latest
