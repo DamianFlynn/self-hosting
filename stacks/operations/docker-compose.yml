@@ -50,4 +50,4 @@ services:
       - "traefik.http.routers.oxidized-rtr.tls=true"
       - "traefik.http.routers.oxidized-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.oxidized-rtr.service=oxidized-svc"
-      - "traefik.http.services.oxidized-svc.loadbalancer.server.port=8842"
+      - "traefik.http.services.oxidized-svc.loadbalancer.server.port=8888"
