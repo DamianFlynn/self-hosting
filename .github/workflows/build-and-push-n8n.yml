@@ -42,7 +42,7 @@ jobs:
         run: sudo apt-get install -y jq
 
       - name: Convert repository name to lowercase
-        run: echo "REPO=${{ github.repository_owner }}/custom-n8n" | tr '[:upper:]' '[:lower:]' >> $GITHUB_ENV
+        run: echo "REPO=$(echo ${{ github.repository_owner }}/custom-n8n | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Check for upstream image update
         id: check-upstream
