@@ -1,0 +1,8 @@
+FROM docker.n8n.io/n8nio/n8n:latest
+
+USER root
+
+# Install additional libraries
+RUN npm install -g natural n8n-nodes-azure-blob-storage jsonrepair linkedin-profile-scraper @damianflynn/martian
+
+USER node
