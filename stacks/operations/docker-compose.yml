@@ -1,0 +1,63 @@
+name: ops
+
+
+########################### NETWORKS
+networks:
+#  default:
+#    driver: bridge
+#  socket_proxy:
+#    name: socket_proxy
+  t3_proxy:
+     external: true
+  operations:
+    name: operations
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.80.0/24
+
+########################### SECRETS
+secrets:
+
+  # Immich
+  gemini_api_key:
+    file: /srv/appdata/secrets/immich/gemini_api_key
+  google_maps_api_key:
+    file: /srv/appdata/secrets/immich/google_maps_api_key
+  immich_api_key:
+    file: /srv/appdata/secrets/immich/immich_api_key
+  immich_db_password:
+    file: /srv/appdata/secrets/immich/immich_db_password
+
+
+services:
+
+  oxidized:
+    container_name: oxidized
+    image: oxidized/oxidized:latest
+    restart: unless-stopped
+    networks:
+      - t3_proxy
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "18880:8880"
+    volumes:
+      - /srv/appdata/oxidized:/root/.config/oxidized
+    environment:
+      CONFIG_RELOAD_INTERVAL: 600
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers Auth
+      - "traefik.http.routers.oxidized-rtr.entrypoints=websecure"
+      - "traefik.http.routers.oxidized-rtr.rule=Host(`oxidized.deercrest.info`)"
+      ## Middlewares
+      - "traefik.http.routers.oxidized-rtr.middlewares=chain-authelia@file"
+      ## HTTP Services
+      - "traefik.http.routers.oxidized-rtr.tls=true"
+      - "traefik.http.routers.oxidized-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.oxidized-rtr.service=oxidized-svc"
+      - "traefik.http.services.oxidized-svc.loadbalancer.server.port=8880"
+
+
+
