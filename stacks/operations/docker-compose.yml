@@ -30,7 +30,7 @@ services:
     security_opt:
       - no-new-privileges:true
     ports:
-      - 8042:8842/tcp
+      - 8088:8888/tcp
     volumes:
       - /srv/appdata/oxidized/config:/home/oxidized/.config/oxidized
       - /srv/appdata/oxidized/ssh:/home/oxidized/.ssh
