@@ -41,11 +41,14 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
+      - name: Convert repository name to lowercase
+        run: echo "REPO=${{ github.repository_owner }}/custom-n8n" | tr '[:upper:]' '[:lower:]' >> $GITHUB_ENV
+
       - name: Check for upstream image update
         id: check-upstream
         run: |
           UPSTREAM_IMAGE="docker.n8n.io/n8nio/n8n:latest"
-          LOCAL_IMAGE="${{ env.REGISTRY }}/${{ github.repository_owner }}/custom-n8n:latest"
+          LOCAL_IMAGE="${{ env.REGISTRY }}/${{ env.REPO }}:latest"
           UPSTREAM_DIGEST=$(docker manifest inspect $UPSTREAM_IMAGE | jq -r '.Descriptor.digest')
           LOCAL_DIGEST=$(docker manifest inspect $LOCAL_IMAGE | jq -r '.Descriptor.digest' || echo "not found")
           echo "UPSTREAM_DIGEST=$UPSTREAM_DIGEST" >> $GITHUB_ENV
@@ -60,5 +63,5 @@ jobs:
           file: apps/n8n/dockerfile
           platforms: linux/amd64,linux/arm/v7,linux/arm64
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/custom-n8n:latest
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/custom-n8n:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO }}:latest
+            ${{ env.REGISTRY }}/${{ env.REPO }}:${{ github.sha }}
