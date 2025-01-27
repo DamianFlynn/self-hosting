@@ -14,20 +14,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 192.168.80.0/24
-
-########################### SECRETS
-secrets:
-
-  # Immich
-  gemini_api_key:
-    file: /srv/appdata/secrets/immich/gemini_api_key
-  google_maps_api_key:
-    file: /srv/appdata/secrets/immich/google_maps_api_key
-  immich_api_key:
-    file: /srv/appdata/secrets/immich/immich_api_key
-  immich_db_password:
-    file: /srv/appdata/secrets/immich/immich_db_password
+        - subnet: 192.168.84.0/24
 
 
 services:
