@@ -29,7 +29,7 @@ services:
     security_opt:
       - no-new-privileges:true
     ports:
-      - 8042:8888/tcp
+      - 8088:8888/tcp
     volumes:
       - /srv/appdata/oxidized/config:/home/oxidized/.config/oxidized
       - /srv/appdata/oxidized/ssh:/home/oxidized/.ssh
@@ -49,6 +49,6 @@ services:
       - "traefik.http.routers.oxidized-rtr.tls=true"
       - "traefik.http.routers.oxidized-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.oxidized-rtr.service=oxidized-svc"
-      - "traefik.http.services.oxidized-svc.loadbalancer.server.port=8042"
+      - "traefik.http.services.oxidized-svc.loadbalancer.server.port=8888"
 
 
