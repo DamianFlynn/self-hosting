@@ -44,9 +44,10 @@ jobs:
       - name: Get latest n8n version
         id: get-latest-version
         run: |
-          LATEST_VERSION=$(curl -s https://hub.docker.com/v2/repositories/n8nio/n8n/tags/?page_size=100\&ordering=last_updated | jq -r '.results[] | select(.name != "latest") | .name' | head -n 1)
+          LATEST_VERSION=$(curl -s https://hub.docker.com/v2/repositories/n8nio/n8n/tags/?page_size=100\&ordering=last_updated | jq -r '.results[] | select(.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' | head -n 1)
           echo "LATEST_VERSION=$LATEST_VERSION"
           echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+          echo "LATEST_VERSION=$LATEST_VERSION"
 
       - name: Convert repository name to lowercase
         run: echo "REPO=$(echo ${{ github.repository_owner }}/custom-n8n | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
