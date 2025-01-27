@@ -44,7 +44,7 @@ jobs:
       - name: Get latest n8n version
         id: get-latest-version
         run: |
-          LATEST_VERSION=$(curl -s https://hub.docker.com/v2/repositories/n8nio/n8n/tags/?page_size=1\&ordering=last_updated | jq -r '.results[0].name')
+          LATEST_VERSION=$(curl -s https://hub.docker.com/v2/repositories/n8nio/n8n/tags/?page_size=100\&ordering=last_updated | jq -r '.results[] | select(.name != "latest") | .name' | head -n 1)
           echo "LATEST_VERSION=$LATEST_VERSION"
           echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
 
