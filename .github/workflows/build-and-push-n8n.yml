@@ -61,7 +61,7 @@ jobs:
           context: .
           push: true
           file: apps/n8n/dockerfile
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.REGISTRY }}/${{ env.REPO }}:latest
             ${{ env.REGISTRY }}/${{ env.REPO }}:${{ github.sha }}
