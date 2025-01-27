@@ -26,7 +26,6 @@ services:
     # user: 0:0
     networks:
       - t3_proxy
-      - operations
     security_opt:
       - no-new-privileges:true
     ports:
