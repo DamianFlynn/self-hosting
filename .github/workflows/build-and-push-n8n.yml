@@ -41,14 +41,20 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
+      - name: Get latest n8n version
+        id: get-latest-version
+        run: |
+          LATEST_VERSION=$(curl -s https://hub.docker.com/v2/repositories/n8nio/n8n/tags/?page_size=1 | jq -r '.results[0].name')
+          echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+
       - name: Convert repository name to lowercase
         run: echo "REPO=$(echo ${{ github.repository_owner }}/custom-n8n | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Check for upstream image update
         id: check-upstream
         run: |
-          UPSTREAM_IMAGE="docker.n8n.io/n8nio/n8n:latest"
-          LOCAL_IMAGE="${{ env.REGISTRY }}/${{ env.REPO }}:latest"
+          UPSTREAM_IMAGE="n8nio/n8n:${{ env.LATEST_VERSION }}"
+          LOCAL_IMAGE="${{ env.REGISTRY }}/${{ env.REPO }}:${{ env.LATEST_VERSION }}"
           UPSTREAM_DIGEST=$(docker manifest inspect $UPSTREAM_IMAGE | jq -r '.Descriptor.digest')
           LOCAL_DIGEST=$(docker manifest inspect $LOCAL_IMAGE | jq -r '.Descriptor.digest' || echo "not found")
           echo "UPSTREAM_DIGEST=$UPSTREAM_DIGEST" >> $GITHUB_ENV
@@ -63,5 +69,5 @@ jobs:
           file: apps/n8n/dockerfile
           platforms: linux/amd64,linux/arm64
           tags: |
+            ${{ env.REGISTRY }}/${{ env.REPO }}:${{ env.LATEST_VERSION }}
             ${{ env.REGISTRY }}/${{ env.REPO }}:latest
-            ${{ env.REGISTRY }}/${{ env.REPO }}:${{ github.sha }}
