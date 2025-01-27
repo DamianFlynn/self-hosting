@@ -3,6 +3,10 @@ FROM docker.n8n.io/n8nio/n8n:latest
 USER root
 
 # Install additional libraries
-RUN npm install -g natural n8n-nodes-azure-blob-storage jsonrepair linkedin-profile-scraper @damianflynn/martian
+RUN if [ "$(uname -m)" = "x86_64" ]; then \
+      npm install -g natural n8n-nodes-azure-blob-storage jsonrepair linkedin-profile-scraper @damianflynn/martian; \
+    else \
+      npm install -g natural n8n-nodes-azure-blob-storage jsonrepair @damianflynn/martian; \
+    fi
 
 USER node
