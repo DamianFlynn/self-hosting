@@ -38,7 +38,7 @@ services:
       - NODE_FUNCTION_ALLOW_EXTERNAL=*
       - GENERIC_TIMEZONE=${TZ}
     networks:
-      - dockernet
+      - t3_proxy
     ports:
       - "127.0.0.1:5678:5678"
     volumes:
@@ -47,7 +47,7 @@ services:
       - ${APPFOLDER}/n8n/python_scripts:/data/py_scripts
       - ${APPFOLDER}/n8n/.requirements.txt:/data/requirements.txt
     labels:
-      - dockerupdater.enabled=true
+
       - traefik.enable=true
       - traefik.http.routers.n8n.rule=Host(`n8n.${DOMAINNAME}`)
       - traefik.http.routers.n8n.tls=true
