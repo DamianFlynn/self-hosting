@@ -34,9 +34,9 @@ services:
 
   oxidized:
     container_name: oxidized
-    image: docker.io/oxidized/oxidized:0.30.1
+    image: docker.io/oxidized/oxidized:0.31.0
     restart: unless-stopped
-    user: 0:0
+    # user: 0:0
     networks:
       - t3_proxy
     security_opt:
