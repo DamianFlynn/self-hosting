@@ -53,7 +53,7 @@ jobs:
 
       - name: Build and push custom n8n image
         if: env.UPSTREAM_DIGEST != env.LOCAL_DIGEST
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v4.2.1
         with:
           context: .
           push: true
