@@ -26,6 +26,7 @@ services:
     # user: 0:0
     networks:
       - t3_proxy
+      - operations
     security_opt:
       - no-new-privileges:true
     ports:
@@ -50,5 +51,3 @@ services:
       - "traefik.http.routers.oxidized-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.oxidized-rtr.service=oxidized-svc"
       - "traefik.http.services.oxidized-svc.loadbalancer.server.port=8888"
-
-
