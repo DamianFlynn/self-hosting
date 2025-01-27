@@ -34,7 +34,7 @@ services:
 
   oxidized:
     container_name: oxidized
-    image: docker.io/oxidized/oxidized:0.31.0
+    image: docker.io/oxidized/oxidized:latest
     restart: unless-stopped
     # user: 0:0
     networks:
