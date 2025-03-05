@@ -96,7 +96,7 @@ services:
       - household_network
     labels:
       - traefik.enable=true
-      - traefik.http.routers.monetr.rule=Host(`budget.${DOMAINNAME}`)
+      - traefik.http.routers.monetr.rule=Host(`budget.deercrest.info`)
       - traefik.http.routers.monetr.tls=true
       - traefik.http.routers.monetr.entrypoints=web,websecure
       - traefik.http.routers.monetr.tls.certresolver=dns-cloudflare
