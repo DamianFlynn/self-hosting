@@ -10,6 +10,11 @@ networks:
       config:
         - subnet: 192.168.88.0/24  
 
+secrets:
+  # OpenAi
+  openai_auth_credentials:
+    file: /srv/appdata/secrets/household/openai_auth_credentials
+
 include:
   ########################### SERVICES
   - openwebui.yml

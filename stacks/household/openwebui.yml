@@ -2,12 +2,21 @@ services:
 
   openwebui:
     image: ghcr.io/open-webui/open-webui:main
+    restart: unless-stopped
+    environment:
+      # - OPENAI_API_BASE_URL=http://pipelines:9099
+      - OPENAI_API_KEY==/run/secrets/openai_auth_credentials
+      - ENABLE_OLLAMA_API=false
+    # extra_hosts:
+    #   - host.docker.internal:host-gateway
     # ports:
     #   - "3000:8080"
     volumes:
       - ${APPFOLDER}/open-webui:/app/backend/data
     networks:
       - t3_proxy
+    secrets:
+      - openai_auth_credentials
     labels:
       - traefik.enable=true
       - traefik.http.routers.openwebui.rule=Host(`openwebui.${DOMAINNAME}`)
@@ -17,3 +26,23 @@ services:
       - traefik.http.routers.openwebui.middlewares=chain-authelia@file
       - traefik.http.routers.openwebui.service=openwebui
       - traefik.http.services.openwebui.loadbalancer.server.port=8080
+
+  # pipelines:
+  #   image: ghcr.io/open-webui/pipelines:main
+  #   container_name: pipelines
+  #   volumes:
+  #     - ./chat_pipelines/pipelines:/app/pipelines
+  #     - ./chat_pipelines/openwebui_utils:/app/openwebui_utils
+  #     - ./src/onepiece_bot:/app/onepiece_bot
+  #     - ./requirements.txt:/app/requirements_custom.txt
+  #   extra_hosts:
+  #     - host.docker.internal:host-gateway
+  #   environment:
+  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
+  #     - PIPELINES_DIR=${PIPELINES_DIR}
+  #     - RESET_PIPELINES_DIR=${RESET_PIPELINES_DIR}
+  #     - PIPELINES_REQUIREMENTS_PATH=${PIPELINES_REQUIREMENTS_PATH}
+  #     - PYTHONPATH=/app
+  #   restart: unless-stopped
+  #   ports:
+  #     - 9099:9099
