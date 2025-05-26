@@ -54,33 +54,38 @@ services:
   # Provides a UI to manage, create, and access KVM VMs through your browser
   webvirtcloud:
     container_name: webvirtcloud
-    image: retspen/webvirtcloud:latest
+    image: forumi0721/alpine-webvirtcloud:latest
     restart: unless-stopped
     networks:
       - t3_proxy  # Connect to the same traefik network for reverse proxy
     security_opt:
       - no-new-privileges:true
     # Ports:
-    # - 8000: Main web interface
+    # - 80: Main web interface
     # - 6080: noVNC websocket connection for VM consoles
     ports:
       - "8000:80"
       - "6080:6080"
     volumes:
       # Store configuration data persistently
-      - /srv/appdata/webvirtcloud:/var/lib/webvirtcloud
+      - /srv/appdata/webvirtcloud:/var/www/webvirtcloud
       # Map libvirt socket from host to allow communication with local hypervisor
       - /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock
-      # Map additional libvirt related files
       - /var/run/libvirt/libvirt-sock-ro:/var/run/libvirt/libvirt-sock-ro
+      # Mount certificates if needed
       - /etc/libvirt:/etc/libvirt:ro
+      # Groups and permissions mapping (may be needed for libvirt access)
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
     environment:
-      # Superuser credentials - CHANGE THESE!
-      - WEBVIRTCLOUD_ADMIN_USERNAME=admin
-      - WEBVIRTCLOUD_ADMIN_PASSWORD=c0nnect10n!
-      # Time zone configuration
+      # Basic configuration
       - TZ=Europe/Dublin
-      # Optional: Debug mode (set to True for troubleshooting)
+      # The Alpine image may use different environment variables
+      # These are likely settings for the Django admin user
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_PASSWORD=c0nn3ct10n!
+      - DJANGO_SUPERUSER_EMAIL=damian.flynn@gmail.com
+      # Debug mode for troubleshooting
       - DEBUG=False
     labels:
       # Traefik integration labels
