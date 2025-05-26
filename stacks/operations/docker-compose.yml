@@ -47,3 +47,54 @@ services:
       - traefik.http.routers.oxidized.tls.certresolver=dns-cloudflare
       - traefik.http.routers.oxidized.service=oxidized
       - traefik.http.services.oxidized.loadbalancer.server.port=8888
+
+
+
+  # WebVirtCloud - Web-based KVM Virtual Machine Management Interface
+  # Provides a UI to manage, create, and access KVM VMs through your browser
+  webvirtcloud:
+    container_name: webvirtcloud
+    image: retspen/webvirtcloud:latest
+    restart: unless-stopped
+    networks:
+      - t3_proxy  # Connect to the same traefik network for reverse proxy
+    security_opt:
+      - no-new-privileges:true
+    # Ports:
+    # - 8000: Main web interface
+    # - 6080: noVNC websocket connection for VM consoles
+    ports:
+      - "8000:80"
+      - "6080:6080"
+    volumes:
+      # Store configuration data persistently
+      - /srv/appdata/webvirtcloud:/var/lib/webvirtcloud
+      # Map libvirt socket from host to allow communication with local hypervisor
+      - /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock
+      # Map additional libvirt related files
+      - /var/run/libvirt/libvirt-sock-ro:/var/run/libvirt/libvirt-sock-ro
+      - /etc/libvirt:/etc/libvirt:ro
+    environment:
+      # Superuser credentials - CHANGE THESE!
+      - WEBVIRTCLOUD_ADMIN_USERNAME=admin
+      - WEBVIRTCLOUD_ADMIN_PASSWORD=c0nnect10n!
+      # Time zone configuration
+      - TZ=Europe/Dublin
+      # Optional: Debug mode (set to True for troubleshooting)
+      - DEBUG=False
+    labels:
+      # Traefik integration labels
+      - traefik.enable=true
+      # Main web interface
+      - traefik.http.routers.webvirtcloud.entrypoints=web,websecure
+      - traefik.http.routers.webvirtcloud.rule=Host(`vms.deercrest.info`)
+      - traefik.http.routers.webvirtcloud.middlewares=chain-authelia@file
+      - traefik.http.routers.webvirtcloud.tls=true
+      - traefik.http.routers.webvirtcloud.tls.certresolver=dns-cloudflare
+      - traefik.http.services.webvirtcloud.loadbalancer.server.port=80
+      # noVNC console service
+      - traefik.http.routers.webvirtcloud-novnc.entrypoints=websecure
+      - traefik.http.routers.webvirtcloud-novnc.rule=Host(`vms.deercrest.info`) && PathPrefix(`/websockify`)
+      - traefik.http.routers.webvirtcloud-novnc.service=webvirtcloud-novnc
+      - traefik.http.routers.webvirtcloud-novnc.tls=true
+      - traefik.http.services.webvirtcloud-novnc.loadbalancer.server.port=6080
