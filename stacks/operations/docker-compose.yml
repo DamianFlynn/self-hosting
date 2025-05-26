@@ -60,33 +60,45 @@ services:
       - t3_proxy  # Connect to the same traefik network for reverse proxy
     security_opt:
       - no-new-privileges:true
-    # Ports:
-    # - 80: Main web interface
-    # - 6080: noVNC websocket connection for VM consoles
+    # The container uses different internal ports:
+    # - 5000: Gunicorn/Django app (webvirtcloud)
+    # - 5100: novncd service
+    # - 5200: nginx frontend
     ports:
-      - "8000:80"
-      - "6080:6080"
+      - "8000:5200"  # Map to the nginx port instead of 80
+      - "6080:5100"  # Map to the novncd port
     volumes:
-      # Store configuration data persistently
-      - /srv/appdata/webvirtcloud:/var/www/webvirtcloud
+      # Create static directory structure properly
+      - /srv/appdata/webvirtcloud/data:/var/www/webvirtcloud
+      - /srv/appdata/webvirtcloud/static:/static
       # Map libvirt socket from host to allow communication with local hypervisor
       - /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock
       - /var/run/libvirt/libvirt-sock-ro:/var/run/libvirt/libvirt-sock-ro
       # Mount certificates if needed
       - /etc/libvirt:/etc/libvirt:ro
-      # Groups and permissions mapping (may be needed for libvirt access)
+      # Add user for nginx - needed to address the nginx user error
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
+      # Add a local nginx.conf to replace the container's version
+      - /srv/appdata/webvirtcloud/nginx.conf:/nginx/nginx.conf:ro
     environment:
       # Basic configuration
       - TZ=Europe/Dublin
-      # The Alpine image may use different environment variables
-      # These are likely settings for the Django admin user
-      - DJANGO_SUPERUSER_USERNAME=admin
-      - DJANGO_SUPERUSER_PASSWORD=c0nn3ct10n!
-      - DJANGO_SUPERUSER_EMAIL=damian.flynn@gmail.com
+      - SUPERUSER_NAME=admin
+      - SUPERUSER_PASSWORD=changeThisPassword
+      - SUPERUSER_EMAIL=admin@example.com
+      # Fix static directory issues by creating the directory in container
+      - STATIC_ROOT=/static
+      # Using nobody user for nginx instead of the non-existent nginx user
+      - NGINX_USER=nobody
       # Debug mode for troubleshooting
-      - DEBUG=False
+      - DEBUG=True
+    # Add custom init script to create required directories and fix permissions
+    command: >
+      sh -c "mkdir -p /static && 
+             chmod 777 /static &&
+             sed -i 's/user nginx/user nobody/g' /nginx/nginx.conf &&
+             supervisord -c /etc/supervisor/supervisord.conf"
     labels:
       # Traefik integration labels
       - traefik.enable=true
@@ -96,10 +108,10 @@ services:
       - traefik.http.routers.webvirtcloud.middlewares=chain-authelia@file
       - traefik.http.routers.webvirtcloud.tls=true
       - traefik.http.routers.webvirtcloud.tls.certresolver=dns-cloudflare
-      - traefik.http.services.webvirtcloud.loadbalancer.server.port=80
+      - traefik.http.services.webvirtcloud.loadbalancer.server.port=5200
       # noVNC console service
       - traefik.http.routers.webvirtcloud-novnc.entrypoints=websecure
       - traefik.http.routers.webvirtcloud-novnc.rule=Host(`vms.deercrest.info`) && PathPrefix(`/websockify`)
       - traefik.http.routers.webvirtcloud-novnc.service=webvirtcloud-novnc
       - traefik.http.routers.webvirtcloud-novnc.tls=true
-      - traefik.http.services.webvirtcloud-novnc.loadbalancer.server.port=6080
+      - traefik.http.services.webvirtcloud-novnc.loadbalancer.server.port=5100
