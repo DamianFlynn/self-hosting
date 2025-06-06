@@ -66,7 +66,7 @@ services:
       - /dev/pts:/dev/pts
       
       # PERSISTENCE: All data that should survive container updates
-      - /srv/appdata/webvirtcloud/database:/srv/webvirtcloud/db.sqlite3
+      - /srv/appdata/webvirtcloud/database:/srv/webvirtcloud  # Map entire directory instead of single file
       - /srv/appdata/webvirtcloud/static:/srv/webvirtcloud/static
       - /srv/appdata/webvirtcloud/ssh:/var/www/.ssh
       - /srv/appdata/webvirtcloud/logs:/var/log
