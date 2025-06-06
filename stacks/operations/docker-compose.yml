@@ -49,69 +49,68 @@ services:
       - traefik.http.services.oxidized.loadbalancer.server.port=8888
 
 
-
   # WebVirtCloud - Web-based KVM Virtual Machine Management Interface
-  # Provides a UI to manage, create, and access KVM VMs through your browser
+  # Uses the GitHub Container Registry image with proper environment configuration
   webvirtcloud:
     container_name: webvirtcloud
-    image: forumi0721/alpine-webvirtcloud:latest
+    image: ghcr.io/damianflynn/webvirtcloud:latest
     restart: unless-stopped
     networks:
-      - t3_proxy  # Connect to the same traefik network for reverse proxy
+      - t3_proxy
+      - operations
     security_opt:
       - no-new-privileges:true
-    # The container uses different internal ports:
-    # - 5000: Gunicorn/Django app (webvirtcloud)
-    # - 5100: novncd service
-    # - 5200: nginx frontend
-    ports:
-      - "8000:5200"  # Map to the nginx port instead of 80
-      - "6080:5100"  # Map to the novncd port
     volumes:
-      # Create static directory structure properly
-      - /srv/appdata/webvirtcloud/data:/var/www/webvirtcloud
-      - /srv/appdata/webvirtcloud/static:/static
-      # Map libvirt socket from host to allow communication with local hypervisor
-      - /var/run/libvirt/libvirt-sock:/var/run/libvirt/libvirt-sock
-      - /var/run/libvirt/libvirt-sock-ro:/var/run/libvirt/libvirt-sock-ro
-      # Mount certificates if needed
-      - /etc/libvirt:/etc/libvirt:ro
-      # Add user for nginx - needed to address the nginx user error
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-      # Add a local nginx.conf to replace the container's version
-      - /srv/appdata/webvirtcloud/nginx.conf:/nginx/nginx.conf:ro
+      # Persistent data storage
+      - /srv/appdata/webvirtcloud/data:/srv/webvirtcloud/db
+      - /srv/appdata/webvirtcloud/logs:/var/log
+      # SSH keys for compute node access
+      - /srv/appdata/webvirtcloud/ssh:/var/www/.ssh
+      # LibVirt socket access for local hypervisor management
+      - /var/run/libvirt:/var/run/libvirt
+      # PTY devices for console access
+      - /dev/pts:/dev/pts
     environment:
-      # Basic configuration
+      # WebVirtCloud Configuration
       - TZ=Europe/Dublin
-      - SUPERUSER_NAME=admin
-      - SUPERUSER_PASSWORD=changeThisPassword
-      - SUPERUSER_EMAIL=admin@example.com
-      # Fix static directory issues by creating the directory in container
-      - STATIC_ROOT=/static
-      # Using nobody user for nginx instead of the non-existent nginx user
-      - NGINX_USER=nobody
-      # Debug mode for troubleshooting
-      - DEBUG=True
-    # Add custom init script to create required directories and fix permissions
-    command: >
-      sh -c "mkdir -p /static && 
-             chmod 777 /static &&
-             sed -i 's/user nginx/user nobody/g' /nginx/nginx.conf &&
-             supervisord -c /etc/supervisor/supervisord.conf"
+      - DEBUG=False
+      
+      # Network Configuration for Traefik Integration
+      - CURRENT_IP=vms.deercrest.info:443
+      - KVM_HOST=172.16.1.21  # Replace with your actual KVM host IP
+      - KVM_HOSTNAME=hufflepuff  # Replace with your hostname
+      
+      # WebSocket Configuration for noVNC Console Access
+      - WS_PUBLIC_HOST=vms.deercrest.info
+      - WS_PUBLIC_PORT=443
+      - WS_PUBLIC_PATH=novncd/
+      
+      # Internal WebSocket Configuration
+      - WS_HOST=0.0.0.0
+      - WS_PORT=6080
+      
     labels:
-      # Traefik integration labels
+      # Enable Traefik
       - traefik.enable=true
-      # Main web interface
-      - traefik.http.routers.webvirtcloud.entrypoints=web,websecure
-      - traefik.http.routers.webvirtcloud.rule=Host(`vms.deercrest.info`)
-      - traefik.http.routers.webvirtcloud.middlewares=chain-authelia@file
-      - traefik.http.routers.webvirtcloud.tls=true
-      - traefik.http.routers.webvirtcloud.tls.certresolver=dns-cloudflare
-      - traefik.http.services.webvirtcloud.loadbalancer.server.port=5200
-      # noVNC console service
-      - traefik.http.routers.webvirtcloud-novnc.entrypoints=websecure
-      - traefik.http.routers.webvirtcloud-novnc.rule=Host(`vms.deercrest.info`) && PathPrefix(`/websockify`)
-      - traefik.http.routers.webvirtcloud-novnc.service=webvirtcloud-novnc
-      - traefik.http.routers.webvirtcloud-novnc.tls=true
-      - traefik.http.services.webvirtcloud-novnc.loadbalancer.server.port=5100
+      
+      # Main WebVirtCloud Web Interface
+      - traefik.http.routers.webvirtcloud-web.entrypoints=websecure
+      - traefik.http.routers.webvirtcloud-web.rule=Host(`vms.deercrest.info`)
+      - traefik.http.routers.webvirtcloud-web.middlewares=chain-authelia@file
+      - traefik.http.routers.webvirtcloud-web.tls=true
+      - traefik.http.routers.webvirtcloud-web.tls.certresolver=dns-cloudflare
+      - traefik.http.routers.webvirtcloud-web.service=webvirtcloud-web
+      - traefik.http.services.webvirtcloud-web.loadbalancer.server.port=80
+      
+      # noVNC Console WebSocket Service
+      - traefik.http.routers.webvirtcloud-vnc.entrypoints=websecure
+      - traefik.http.routers.webvirtcloud-vnc.rule=Host(`vms.deercrest.info`) && PathPrefix(`/novncd/`)
+      - traefik.http.routers.webvirtcloud-vnc.service=webvirtcloud-vnc
+      - traefik.http.routers.webvirtcloud-vnc.tls=true
+      - traefik.http.routers.webvirtcloud-vnc.tls.certresolver=dns-cloudflare
+      - traefik.http.services.webvirtcloud-vnc.loadbalancer.server.port=6080
+      
+      # HTTP to HTTPS redirect
+      - traefik.http.routers.webvirtcloud-web-insecure.entrypoints=web
+      - traefik.http.routers.webvirtcloud-web-insecure.rule=Host(`vms.deercrest.info`)
+      - traefik.http.routers.webvirtcloud-web-insecure.middlewares=redirect-to-https@file
