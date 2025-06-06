@@ -50,7 +50,7 @@ services:
 
 
   # WebVirtCloud - Web-based KVM Virtual Machine Management Interface
-  # Uses the GitHub Container Registry image with proper environment configuration
+  # Uses the GitHub Container Registry image with proper environment configuration      
   webvirtcloud:
     container_name: webvirtcloud
     image: ghcr.io/damianflynn/webvirtcloud:latest
@@ -61,15 +61,18 @@ services:
     security_opt:
       - no-new-privileges:true
     volumes:
-      # Persistent data storage
-      - /srv/appdata/webvirtcloud/data:/srv/webvirtcloud/db
-      - /srv/appdata/webvirtcloud/logs:/var/log
-      # SSH keys for compute node access
-      - /srv/appdata/webvirtcloud/ssh:/var/www/.ssh
       # LibVirt socket access for local hypervisor management
       - /var/run/libvirt:/var/run/libvirt
       # PTY devices for console access
       - /dev/pts:/dev/pts
+
+      # IMPORTANT: Persist SSH keys to avoid reconfiguration
+      - /srv/appdata/webvirtcloud/ssh:/var/www/.ssh
+      
+      # Persistent data storage
+      # - /srv/appdata/webvirtcloud/data:/srv/webvirtcloud/db
+      # - /srv/appdata/webvirtcloud/logs:/var/log
+
     environment:
       # WebVirtCloud Configuration
       - TZ=Europe/Dublin
@@ -88,7 +91,14 @@ services:
       # Internal WebSocket Configuration
       - WS_HOST=0.0.0.0
       - WS_PORT=6080
-      
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
     labels:
       # Enable Traefik
       - traefik.enable=true
