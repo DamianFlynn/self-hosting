@@ -91,15 +91,16 @@ services:
       - WS_PORT=6080
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD", "curl", "-f", "http://localhost:80/", "&&", "netstat", "-tln", "|", "grep", ":6080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
     labels:
       # Enable Traefik
       - traefik.enable=true
+      - traefik.docker.network=t3_proxy
       
       # Main WebVirtCloud Web Interface (catch-all, lower priority)
       - traefik.http.routers.webvirtcloud-web.entrypoints=websecure
