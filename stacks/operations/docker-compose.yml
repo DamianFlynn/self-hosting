@@ -75,7 +75,7 @@ services:
       # WebVirtCloud Configuration
       - TZ=Europe/Dublin
       - DEBUG=False
-      
+
       # Network Configuration for Traefik Integration
       - CURRENT_IP=vms.deercrest.info:443
       - KVM_HOST=172.16.1.21  # Replace with your actual KVM host IP
@@ -84,18 +84,18 @@ services:
       # WebSocket Configuration for noVNC Console Access
       - WS_PUBLIC_HOST=vms.deercrest.info
       - WS_PUBLIC_PORT=443
-      - WS_PUBLIC_PATH=novncd/
+      - WS_PUBLIC_PATH=/novncd/
       
       # Internal WebSocket Configuration
       - WS_HOST=0.0.0.0
       - WS_PORT=6080
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/", "&&", "netstat", "-tln", "|", "grep", ":6080"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
     labels:
       # Enable Traefik
@@ -119,11 +119,9 @@ services:
       - traefik.http.routers.webvirtcloud-vnc.tls=true
       - traefik.http.routers.webvirtcloud-vnc.tls.certresolver=dns-cloudflare
       - traefik.http.routers.webvirtcloud-vnc.priority=10
-      - traefik.http.services.webvirtcloud-vnc.loadbalancer.server.port=6080
+      - traefik.http.services.webvirtcloud-vnc.loadbalancer.server.port=6080  
       
       # HTTP to HTTPS redirect
       - traefik.http.routers.webvirtcloud-web-insecure.entrypoints=web
       - traefik.http.routers.webvirtcloud-web-insecure.rule=Host(`vms.deercrest.info`)
       - traefik.http.routers.webvirtcloud-web-insecure.middlewares=redirect-to-https@file
-
-      
